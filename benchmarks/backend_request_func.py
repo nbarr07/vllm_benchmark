@@ -336,13 +336,15 @@ async def async_request_openai_chat_completions(
                 },
             ],
             "temperature": 0.0,
-            "max_completion_tokens": request_func_input.output_len,
+            "max_tokens": request_func_input.output_len,
             "stream": True,
-            "ignore_eos": request_func_input.ignore_eos,
+            #"ignore_eos": request_func_input.ignore_eos,
         }
         if request_func_input.extra_body:
             payload.update(request_func_input.extra_body)
         headers = {
+            "Accept": "text/event-stream", ## Added those two first headers.
+            "Connection": "keep-alive",
             "Content-Type": "application/json",
             "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}",
         }
@@ -370,6 +372,7 @@ async def async_request_openai_chat_completions(
                         else:
                             timestamp = time.perf_counter()
                             data = json.loads(chunk)
+                            #print(f"DEBUG: Received chunk data: {data}")
 
                             delta = data["choices"][0]["delta"]
                             if delta.get("content", None):
